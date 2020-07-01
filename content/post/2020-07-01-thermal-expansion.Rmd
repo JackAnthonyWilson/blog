@@ -7,7 +7,7 @@ categories: []
 tags: []
 ---
 
-```{r}
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 #Thermal Expansion of Vanadium
 #theme_set(theme_minimal())
 library(readxl)
@@ -19,7 +19,7 @@ theme_set(theme_bw())
 ```
 
 
-```{r}
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 # Colourblind friendly palette with black:
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -40,7 +40,7 @@ g<-data %>%
   labs(
     title = "Linear Coefficient of Thermal Expansion",
     subtitle = "Vanadium",
-    y=expression(paste("Linear Expansion   ", alpha, " (", "?", 10^-6, " ",  K^-1, " )")),
+    y=expression(paste("Linear Expansion   ", alpha, " (", " %>% ", 10^-6, " ",  K^-1, " )")),
     x="Temperature (K)"
     ) +
   geom_vline(xintercept = 273, linetype = 3) +
