@@ -15,40 +15,289 @@ library(tidyverse)
 library(scales)
 library(plotly)
 theme_set(theme_bw())
+library(readr)
 
 ```
 
+### Hello there
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 # Colourblind friendly palette with black:
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
 
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
 # -----------------------------------------------------
 # VANADIUM EXPANSION GRAPH
 data <- read_xlsx("thermal_expansion_data.xlsx", sheet = 2) %>%
-  pivot_longer(cols=c('DFT (This study)', "S.V. Stankus et al (1993)",'D.G. Westlake (1970)','Y.S. Touloukian et al (1975)','D.I. Bolef [110] (1971)', 'G.K. White (1962)', 'D.I. Bolef [100] (1971)'), names_to = 'Legend', values_to = 'CTE') 
+  pivot_longer(cols=c('DFT (This study)', "S.V. Stankus et al (1993)",'D.G. Westlake (1970)','Y.S. Touloukian et al (1975)','D.I. Bolef [110] (1971)', 'G.K. White (1962)', 'D.I. Bolef [100] (1971)'), names_to = 'Legend', values_to = 'CTE')
+```
 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 g<-data %>% 
   mutate(CTE=CTE*1000000) %>% 
   ggplot(aes(`Temp K`, CTE)) +
-  geom_point(aes(colour = Legend, stroke = 1), size=2, alpha = 0.7) +
+  geom_point(aes(colour = Legend, stroke = 1), size=3, alpha = 0.7) +
   scale_colour_manual(values = cbbPalette) +
   scale_y_continuous() +
   scale_shape_manual(values = c(0:6))+
-  theme(legend.title = element_blank(), text = element_text(size=20)) +
+  theme(legend.title = element_blank(), text = element_text(size=8),
+       panel.grid.major = element_blank(),
+       panel.grid.minor = element_blank()) +
   expand_limits(x = 2250) +
   labs(
     title = "Linear Coefficient of Thermal Expansion",
     subtitle = "Vanadium",
-    y=expression(paste("Linear Expansion   ", alpha, " (", " %>% ", 10^-6, " ",  K^-1, " )")),
+    y=expression(paste("Linear Expansion   ", alpha, " (", 10^-6, " ",  K^-1, " )")),
     x="Temperature (K)"
     ) +
   geom_vline(xintercept = 273, linetype = 3) +
   geom_vline(xintercept = 298, linetype = 3)
+  
 
 g
 
+f <- data %>% 
+  mutate(CTE=CTE*1000000) %>%
+  filter(`Temp K`<300) %>%
+#  filter('CTE'<9) %>% 
+  ggplot(aes(`Temp K`, CTE)) +
+  geom_point(aes(colour = Legend, size = 25, stroke = 1), alpha = 0.6)+
+  scale_colour_manual(values = cbbPalette) +
+  scale_y_continuous() +
+  scale_shape_manual(values = c(0:6))+
+  expand_limits(x = 200) +
+  theme(text = element_text(size=29), legend.position = "none",
+       panel.grid.major = element_blank(),
+       panel.grid.minor = element_blank())+
+  labs(
+    y="",
+    x="")
+f
+```
 
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+data <- read_xlsx("thermal_expansion_data.xlsx", sheet = 'Mo_Expansion') %>% 
+  pivot_longer(cols=c("Y.S. Touloukian (1975)", "F.C. Nix (1942)", "J.W. Edwards (1950)", "E. Gruneisen (1962)", "A.G. Worthing (1926)", "DFT (This study)"), names_to = 'Legend', values_to = 'CTE')
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+f <- data %>% 
+  ggplot(aes(Temp_K, CTE)) +
+  geom_point(aes(colour=Legend), size = 2, alpha = 0.6) +
+  scale_colour_manual(values = cbbPalette) +
+  theme_bw() +
+  theme(legend.title = element_blank(), legend.position = c(0.82, 0.25), legend.background = element_rect(linetype = 1, colour = 1), 
+        plot.title = element_text(vjust = -12, hjust = 0.21), plot.subtitle = element_text(vjust = -14.15, hjust =0.15),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  labs(
+    title = "Linear Coefficient of Thermal Expansion",
+    subtitle = "Molybdenum",
+    x = "Temperature (K)",
+    y = expression(paste("Linear Expansion   ", alpha, " (", "?", 10^-6, " ",  K^-1, " )"))
+  ) +
+  lims(x = c(0, 1000), y = c(0, 8)) +
+  geom_vline(xintercept = 273.15, linetype = 3) +
+  geom_vline(xintercept = 298.15, linetype = 3)
+
+f
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# Molybdenum done
+# ----------------------------------------------------------------------
+# Molybdenum and Vanadium
+
+data <- read_xlsx("thermal_expansion_data.xlsx", sheet = 'DFT') %>% 
+  pivot_longer(cols=c("V", "Mo1V15", "MoV_ROM", "Mo15V1", "Mo"), names_to = "Composition", values_to = "CTE")
+ # pivot_longer(cols=c("Mo", "Mo15V1", "MoV_ROM", "Mo1V15", "V"), names_to = "Composition", values_to = "CTE")
+head(data)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#
+data %>% 
+  mutate(Composition=fct_reorder(Composition,CTE)) %>% 
+  ggplot(aes(Temp_K, CTE, colour = Composition)) +
+  lims(y=c(0,13))+
+ # geom_point(size = 0.9, na.rm = TRUE) + theme_bw() +
+  geom_smooth(se = FALSE, na.rm = TRUE, span = 0.1, formula = y ~ x, size = 1.5) +
+  scale_colour_manual(name="at.% Vanadium",values = cbbPalette, labels=c("0","6","50","94","100")) +
+  guides(colour = guide_legend(reverse=TRUE)) +
+  theme(legend.position = c(0.85,0.21), legend.key.size = unit(0.1, 'cm'), legend.background = element_rect(linetype=1, colour = "black")) +
+  theme(plot.title = element_text(vjust = -7, hjust = 0.02)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_x_continuous(limits = c(0, 1000)) +
+  labs(
+    title = 'Linear CTE for the Mo-V system',
+    x = 'Temperature (K)',
+    y = expression(paste("Linear Expansion   ", alpha, " (", "?", 10^-6, " ",  K^-1, " )")
+      ))
+
+                    #MoV
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# ----------------------------------------------------------------------
+# ZIRCONIUM EXPANSION GRAPH
+
+data <- read_xlsx("thermal_expansion_data.xlsx", sheet = 'Zr_Expansivity') %>% 
+  pivot_longer(cols=c("polycrystalline HCP - G.B. Skinner (1952)", "BCC - G.B. Skinner (1952)", "Polycrystalline HCP Y.S. Touloukian (1975)", "HCP a axis Y.S. Touloukian (1975)", "HCP c axis Y.S. Touloukian (1975)"), names_to = "Legend", values_to = "CTE")
+head(data)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data %>% 
+  ggplot(aes(Temp_K, CTE, colour = Legend), alpha =0.9) +
+  scale_colour_manual(values = cbbPalette) +
+  geom_point() +
+  geom_vline(xintercept = 273.15, linetype = 2) +
+  geom_vline(xintercept = 298.15, linetype = 3) +
+  geom_vline(xintercept = 373.15, linetype = 3) +
+  geom_vline(xintercept = 548, linetype = 3) +
+  geom_vline(xintercept = 593, linetype = 3) +
+  geom_vline(xintercept = 743, linetype = 3) +
+  geom_vline(xintercept = 373.15, linetype = 3) +
+  geom_vline(xintercept = 1136, linetype = 3) +
+  theme(legend.title = element_blank()) +
+  labs(
+    title = "Expansivity - %change in length from 0 ?C",
+    subtitle = "Zirconium",
+    x = "Temperature (K)",
+    y = "%change in length from 273K"
+      ) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 18)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  annotate("text", x = 599, y = 0.33, label = "HCP c-axis", angle = 40, size = 3) +
+  annotate("text", x = 745, y = 0.35, label = "Polycrystalline",  angle = 40, size = 3) +
+  annotate("text", x = 890, y = 0.35, label = "HCP a-axis",  angle = 30, size = 3) +
+  annotate("text", x = 1315, y = 0.68, label = "BCC",  angle = 45, size = 3) +
+annotate("text", x = 242, y = 0.7, label = "273K",  angle = 90, size = 3) +
+annotate("text", x = 518, y = 0.7, label = "PWR Operation Range",  angle = 90, size = 3) +
+annotate("text", x = 713, y = 0.7, label = "Pellet-cladding interaction",  angle = 90, size = 3) +
+annotate("text", x = 1106, y = 0.15, label = "Zr phase transition",  angle = 90, size = 3) +
+  theme(plot.title = element_text(vjust = -11.5, hjust = 0.02, colour = 6)) +
+  theme(plot.subtitle = element_text(vjust = -15, hjust = 0.02, colour = 6)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme(legend.position = c(0.82, 0.2), legend.background = element_rect(linetype = 1, colour = 1, size = 1), legend.text=element_text(size=7)) +
+  guides(shape = guide_legend(override.aes = list(size = 3)),
+         color = guide_legend(override.aes = list(size = 3))) +
+  theme(legend.title = element_text(size = 7), 
+        legend.text  = element_text(size = 7))
+
+g
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# Zirconium done
+# ---------------------------------------------------------------------
+#CHROMIUM + ZIRCONIUM
+
+data <- read_xlsx("thermal_expansion_data.xlsx", sheet = 'Cr_Expansivi_ty') %>% 
+  pivot_longer(cols=c("Cr Y.S. Touloukian (1975)", "Zr Y.S. Touloukian (1975)"), names_to = "Legend", values_to = "CTE")
+head(data)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data %>% 
+  ggplot(aes(Temp_K, CTE, colour = Legend)) +
+  geom_point() +
+  scale_colour_manual(values = cbbPalette) +
+  annotate("text", x = 242, y = 0.7, label = "273K",  angle = 90, size = 3) +
+  annotate("text", x = 518, y = 0.7, label = "PWR Operation Range",  angle = 90, size = 3) +
+  annotate("text", x = 713, y = 0.8, label = "Pellet-cladding interaction",  angle = 90, size = 3) +
+  annotate("text", x = 1106, y = 0.15, label = "Zr phase transition",  angle = 90, size = 3) +
+  geom_vline(xintercept = 273.15, linetype = 2, size =0.1) +
+  geom_vline(xintercept = 298.15, linetype = 3, size =0.1) +
+  geom_vline(xintercept = 373.15, linetype = 3, size =0.1) +
+  geom_vline(xintercept = 548, linetype = 3, size =0.1) +
+  geom_vline(xintercept = 593, linetype = 3, size =0.1) +
+  geom_vline(xintercept = 743, linetype = 3, size =0.1) +
+  geom_vline(xintercept = 373.15, linetype = 3, size =0.1) +
+  geom_vline(xintercept = 1136, linetype = 3, size =0.1) +
+  labs(
+    title = "Expansivity - %change in length from 0 ?C",
+    subtitle = "Zirconium and Chromium",
+    x = "Temperature (K)",
+    y = "%change in length from 273K"
+  ) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  theme(
+    legend.title = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = c(0.8, 0.15),
+    legend.background = element_rect(colour = 1)
+  )
+
+# ------------------------------------------------------------------
+#PRESENTATIONS
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+#Entropy of mixing
+data <- read_xlsx("thermal_expansion_data.xlsx", sheet = 'presentations')
+ # pivot_longer(cols=c("Cr Y.S. Touloukian (1975)", "Zr Y.S. Touloukian (1975)"), names_to = "Legend", values_to = "CTE")
+head(data)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data %>% 
+  ggplot(aes(x = composition, y = smix)) +
+  geom_line(size = 2) +
+  theme_bw() +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  lims(y=c(0,7)) +
+  labs(
+    x = "% B",
+    y = "Entropy of mixing"
+  )
+
+# THERMAL EXPANSION FINSIH
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Zr MONOVACANCY FORMATION ENERGY
+
+#~~~~~~~~~~~~~~~~~~~
+#Web of Science Search
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+setwd("~/PhD/LITERATURE REVIEW")
+data <- read_xlsx("web_of_science_search.xlsx", sheet = 'Sheet1')       
+head(data)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data %>% 
+  ggplot(aes(x = Year, y = No.)) +
+  geom_col() +
+  theme_classic() +
+  labs(
+    title = element_blank(),
+    y = "Publications"
+  ) +
+  expand_limits( y = 0) +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0.01, 0))
 
 ```
 
+### Fig 1.1. Publications on the term "High Entropy Alloys" according to a search on Web of Science
