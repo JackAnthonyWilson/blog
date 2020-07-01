@@ -1,0 +1,80 @@
+---
+title: Thermal Expansion
+author: ~
+date: '2020-07-01'
+slug: thermal-expansion
+categories: []
+tags: []
+---
+
+
+
+<pre class="r"><code>#Thermal Expansion of Vanadium
+#theme_set(theme_minimal())
+library(readxl)
+library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages ------------------------------------------------------------------------------ tidyverse 1.3.0 --</code></pre>
+<pre><code>## v ggplot2 3.3.0     v purrr   0.3.4
+## v tibble  3.0.1     v dplyr   0.8.5
+## v tidyr   1.0.3     v stringr 1.4.0
+## v readr   1.3.1     v forcats 0.5.0</code></pre>
+<pre><code>## -- Conflicts --------------------------------------------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(scales)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;scales&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     discard</code></pre>
+<pre><code>## The following object is masked from &#39;package:readr&#39;:
+## 
+##     col_factor</code></pre>
+<pre class="r"><code>library(plotly)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;plotly&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     last_plot</code></pre>
+<pre><code>## The following object is masked from &#39;package:stats&#39;:
+## 
+##     filter</code></pre>
+<pre><code>## The following object is masked from &#39;package:graphics&#39;:
+## 
+##     layout</code></pre>
+<pre class="r"><code>theme_set(theme_bw())</code></pre>
+<pre class="r"><code># Colourblind friendly palette with black:
+cbbPalette &lt;- c(&quot;#000000&quot;, &quot;#E69F00&quot;, &quot;#56B4E9&quot;, &quot;#009E73&quot;, &quot;#F0E442&quot;, &quot;#0072B2&quot;, &quot;#D55E00&quot;, &quot;#CC79A7&quot;)
+
+# -----------------------------------------------------
+# VANADIUM EXPANSION GRAPH
+data &lt;- read_xlsx(&quot;thermal_expansion_data.xlsx&quot;, sheet = 2) %&gt;%
+  pivot_longer(cols=c(&#39;DFT (This study)&#39;, &quot;S.V. Stankus et al (1993)&quot;,&#39;D.G. Westlake (1970)&#39;,&#39;Y.S. Touloukian et al (1975)&#39;,&#39;D.I. Bolef [110] (1971)&#39;, &#39;G.K. White (1962)&#39;, &#39;D.I. Bolef [100] (1971)&#39;), names_to = &#39;Legend&#39;, values_to = &#39;CTE&#39;) </code></pre>
+<pre><code>## New names:
+## * `` -&gt; ...10
+## * `` -&gt; ...12
+## * `` -&gt; ...13
+## * `` -&gt; ...14
+## * `` -&gt; ...15
+## * ...</code></pre>
+<pre class="r"><code>g&lt;-data %&gt;% 
+  mutate(CTE=CTE*1000000) %&gt;% 
+  ggplot(aes(`Temp K`, CTE)) +
+  geom_point(aes(colour = Legend, stroke = 1), size=2, alpha = 0.7) +
+  scale_colour_manual(values = cbbPalette) +
+  scale_y_continuous() +
+  scale_shape_manual(values = c(0:6))+
+  theme(legend.title = element_blank(), text = element_text(size=20)) +
+  expand_limits(x = 2250) +
+  labs(
+    title = &quot;Linear Coefficient of Thermal Expansion&quot;,
+    subtitle = &quot;Vanadium&quot;,
+    y=expression(paste(&quot;Linear Expansion   &quot;, alpha, &quot; (&quot;, &quot;?&quot;, 10^-6, &quot; &quot;,  K^-1, &quot; )&quot;)),
+    x=&quot;Temperature (K)&quot;
+    ) +
+  geom_vline(xintercept = 273, linetype = 3) +
+  geom_vline(xintercept = 298, linetype = 3)
+
+g</code></pre>
+<pre><code>## Warning: Removed 1351 rows containing missing values (geom_point).</code></pre>
+<p><img src="/post/2020-07-01-thermal-expansion_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>

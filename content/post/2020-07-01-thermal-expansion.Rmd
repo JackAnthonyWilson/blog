@@ -1,0 +1,54 @@
+---
+title: Thermal Expansion
+author: ~
+date: '2020-07-01'
+slug: thermal-expansion
+categories: []
+tags: []
+---
+
+```{r}
+#Thermal Expansion of Vanadium
+#theme_set(theme_minimal())
+library(readxl)
+library(tidyverse)
+library(scales)
+library(plotly)
+theme_set(theme_bw())
+
+```
+
+
+```{r}
+# Colourblind friendly palette with black:
+cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+# -----------------------------------------------------
+# VANADIUM EXPANSION GRAPH
+data <- read_xlsx("thermal_expansion_data.xlsx", sheet = 2) %>%
+  pivot_longer(cols=c('DFT (This study)', "S.V. Stankus et al (1993)",'D.G. Westlake (1970)','Y.S. Touloukian et al (1975)','D.I. Bolef [110] (1971)', 'G.K. White (1962)', 'D.I. Bolef [100] (1971)'), names_to = 'Legend', values_to = 'CTE') 
+
+g<-data %>% 
+  mutate(CTE=CTE*1000000) %>% 
+  ggplot(aes(`Temp K`, CTE)) +
+  geom_point(aes(colour = Legend, stroke = 1), size=2, alpha = 0.7) +
+  scale_colour_manual(values = cbbPalette) +
+  scale_y_continuous() +
+  scale_shape_manual(values = c(0:6))+
+  theme(legend.title = element_blank(), text = element_text(size=20)) +
+  expand_limits(x = 2250) +
+  labs(
+    title = "Linear Coefficient of Thermal Expansion",
+    subtitle = "Vanadium",
+    y=expression(paste("Linear Expansion   ", alpha, " (", "?", 10^-6, " ",  K^-1, " )")),
+    x="Temperature (K)"
+    ) +
+  geom_vline(xintercept = 273, linetype = 3) +
+  geom_vline(xintercept = 298, linetype = 3)
+
+g
+
+
+
+```
+
