@@ -19,7 +19,7 @@ library(readr)
 
 ```
 
-### Hello there
+### Hello there. The following is a selection of graphs and work done on thermal expansion.
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 # Colourblind friendly palette with black:
@@ -43,9 +43,10 @@ g<-data %>%
   scale_colour_manual(values = cbbPalette) +
   scale_y_continuous() +
   scale_shape_manual(values = c(0:6))+
-  theme(legend.title = element_blank(), text = element_text(size=8),
+  theme(legend.title = element_blank(), text = element_text(size=10),
        panel.grid.major = element_blank(),
        panel.grid.minor = element_blank()) +
+  theme(legend.position = c(0.85,0.21), legend.key.size = unit(0.1, 'cm'), legend.background = element_rect(linetype=1, colour = "black")) +
   expand_limits(x = 2250) +
   labs(
     title = "Linear Coefficient of Thermal Expansion",
@@ -137,7 +138,7 @@ data %>%
   labs(
     title = 'Linear CTE for the Mo-V system',
     x = 'Temperature (K)',
-    y = expression(paste("Linear Expansion   ", alpha, " (", "?", 10^-6, " ",  K^-1, " )")
+    y = expression(paste("Linear Expansion   ", alpha, " (", 10^-6, " ",  K^-1, " )")
       ))
 
                     #MoV
